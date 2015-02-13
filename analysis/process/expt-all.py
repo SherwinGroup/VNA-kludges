@@ -103,8 +103,8 @@ show()
 
 for samp in samps:
     np.savetxt(samp+"-efield.txt", np.hstack((
-        samps[samp].trc_bd_fstack()[:,0],
-        samps[samp].efield_surf_abs()
+        samps[samp].trc_bd_fstack()[:,0].reshape((len(samps[samp].trc_bd_fstack()[:,0]),1)),
+        samps[samp].efield_surf_abs().reshape((len(samps[samp].trc_bd_fstack()[:,0]),1))
         ))
     )
 
