@@ -26,7 +26,6 @@ def reflm_std(mirror_reference_filename,mirror_refl_filename,sample_reference_fi
 ########################################
 
 
-
 ########################################
 #refractive index calc. functions
 ########################################
