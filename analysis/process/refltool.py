@@ -200,7 +200,10 @@ class trc(object):
 		
     #attempts to match together entire spectrum
     def bdtrc(self,band):
-        return self.trc[band][self.bd_ind(band)[0]:self.bd_ind(band)[1]]
+        try:
+            return self.trc[band][self.bd_ind(band)[0]:self.bd_ind(band)[1]]
+        except ValueError:
+            return self.trc[band]
 		
     def list_bands(self):
         outp=[]
@@ -212,15 +215,23 @@ class trc(object):
         minfreqlist={}
         for band in self.list_bands():
             minfreqlist[band]=self.bdfreq(band)[0]
-        if minfreqlist != {}:
+        try:
             outp=self.bdtrc(min(minfreqlist,key=minfreqlist.get))
             minfreqlist.pop(min(minfreqlist,key=minfreqlist.get),None)
             while minfreqlist != {}:
                 nextband=min(minfreqlist,key=minfreqlist.get) 
                 outp=np.vstack((outp,self.bdtrc(nextband)))
                 minfreqlist.pop(nextband,None)
-        return outp[outp[:,0].argsort()]
-		
+            return outp[outp[:,0].argsort()]
+        except ValueError:
+            bandlist=self.list_bands()
+            outp=self.trc[bandlist[0]]
+            bandlist.pop(0)
+            while len(bandlist) != 0:
+                outp=np.vstack((outp,self.trc[bandlist(0)]))
+                bandlist.pop(0)
+            return outp[out[:,0].argsort()]
+
     def nguess_make(self):
         from scipy.signal import argrelmax
         peakind=argrelmax(np.abs(self.trc_bd_fstack().view(complex)[:,1])**2,order=self.window)
@@ -269,6 +280,8 @@ class trc(object):
     def sig_ohm_inf(self):
         return np.imag(self.eps_inf().view(complex)*8.85e-12*2*np.pi*self.trc_bd_fstack()[:,0:1]).reshape(((len(self.trc_bd_fstack()[:,0]),1)))
 
+    def efield_surf_abs(self):
+        return abs(1+f2c(self.trc_bd_fstack()[:,2:4])[:,0])
 
     def bd_reflectivity(self):
         return np.hstack((
