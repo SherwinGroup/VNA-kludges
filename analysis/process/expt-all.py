@@ -42,8 +42,11 @@ refl_expt_o2=rt.reflm_std("mirror_VNATrc.001","mirror_VNATrc.002","su8onsaph_VNA
 chdir("../su8-top")
 refl_expt_o3=rt.reflm_std("mirror_VNATrc.001","mirror_VNATrc.002","saff_VNATrc.001","saff_VNATrc.002")
 
+chdir("../../si-goldcoat")
+refl_expt_n1=rt.reflm_std("mirror_VNATrc.001","mirror_VNATrc.002","si_VNATrc.001","si_VNATrc.002")
 
-chdir("../../../process")
+
+chdir("../../process")
 
 #############################################
 
@@ -89,6 +92,10 @@ samps['sapph-su8-bot'].add_trc('wr1p5', refl_expt_o2)
 
 samps['sapph-su8-top']=rt.trc(freqbounds=freqbd,n1=1,n2=1,d=.5e-3,window=100)
 samps['sapph-su8-top'].add_trc('wr1p5', refl_expt_o3)
+
+
+samps['si-goldcoat']=rt.trc(freqbounds=freqbd,n1=1,n2=1,d=.5e-3,window=100)
+samps['si-goldcoat'].add_trc('wr1p5', refl_expt_n1)
 
 
 ##############################################
