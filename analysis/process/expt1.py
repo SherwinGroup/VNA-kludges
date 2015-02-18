@@ -14,7 +14,14 @@ freq=data[:,0]
 
 #rv= np.abs(data[:,3])**2 + np.abs(data[:,4])**2
 
+chdir("../../process")
+
+'''
 plot(freq,rv)
 #plot(freq,np.log(rv)/np.log(10)) 
 show()
+'''
 
+outp=np.hstack((data[:,0:1],data[:,2:3]))
+
+np.savetxt('quartz-transm.txt',outp)
