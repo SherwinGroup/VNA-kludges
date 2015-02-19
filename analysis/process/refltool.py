@@ -31,6 +31,12 @@ def reflm_std(mirror_reference_filename,mirror_refl_filename,sample_reference_fi
 ########################################
 
 def slabr(n,n1,n2,d,freq_range):
+    #calculates frequency-dependent complex reflection coefficient for a "slab" geometry
+    #              ->         |||                     |||
+    #         n1   ->         |||          n          |||          n2
+    #              ->         |||                     |||
+    #d = thickness of middle layer
+    #freq range is desired frequency or array of frequencys
     r=((n1-n)/(n1+n)+(n-n2)/(n+n2)*np.exp(4*np.pi*1j*n*d/2.9979e8*freq_range))/(1+(n1-n)/(n1+n)*(n-n2)/(n+n2)*np.exp(4*np.pi*1j*n*d/2.9979e8*freq_range))
     return r
 
@@ -157,7 +163,7 @@ def drude_spec_fit2(freqs,eps_in,fp_guess,gamma_guess):
 #class for reflectance data
 ########################################
 
-class trc(object):
+class trc(object): #means trace
     def __init__(self,**kwargs):
         self.trc={}
         if ("freqbounds" in kwargs):
