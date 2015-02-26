@@ -1,8 +1,6 @@
 import numpy as np
-import refltool as rt
 from os import chdir 
-from pylab import *
-
+import refltool as rt
 
 ############
 ##import data

@@ -1,25 +1,22 @@
 import numpy as np
 import refltool as rt
-from pylab import *
+import matplotlib.pyplot as plt
 
-freq=np.linspace(0e9,1e12,num=1000)
 
-n_ito_1=5+5j
-n_ito_2=50+50j
 
-n1=3.
-n2=1.
+n1 = 3.
+n2 = 1.
+n_ito_1 = 67+67j
+n_ito_2 = 100+100j
 
-d1=150e-9
-d2=300e-9
-d3=450e-9
-
+freq_array = np.linspace(1e9, 1e12, num=1000)
+dist_array = np.linspace(100e-9, 500e-9, num=1000)
+'''
 outp1=rt.slabr(n_ito_2,n1,n2,d1,freq)
 outp2=rt.slabr(n_ito_2,n1,n2,d2,freq)
 
 outp3=rt.slabr(n_ito_2,n1,n2,d3,freq)
 
-'''
 plot(freq,outp1.real)
 plot(freq,outp1.imag)
 plot(freq,outp2.real)
@@ -28,20 +25,17 @@ plot(freq,outp3.real)
 plot(freq,outp3.imag)
 show()
 '''
+single_dist = 150e-9
+single_freq = 510e9
 
-freqs=500e9
-d=np.linspace(100e-9,1000e-9,num=1000)
+sapph_thickness = 495e-6
 
-dsaph1=1e-3*3.7
-dsaph2=1e-3*3.75
-dsaph3=1e-3*3.98
-
-outp=rt.slabr(n_ito_2,n1,n2,d,freqs)
-
+outp1=rt.slabr(n_ito_1, n1, n2, single_dist, freq_array)
+outp2=rt.slabr(n_ito_2 ,n1, n2, single_dist, freq_array)
 #neff=(n2-outp)/(n2+outp)
 
-r23=outp
-
+r23_1 = outp1
+r23_2 = outp2
 '''
 plot(d*1e9,outp.real)
 plot(d*1e9,outp.imag)
@@ -50,18 +44,17 @@ show()
 
 r12=(1.-n1)/(1.+n1)
 
-beta1=2*np.pi*n1*dsaph1*freqs/3e8
-beta2=2*np.pi*n1*dsaph2*freqs/3e8
-beta3=2*np.pi*n1*dsaph3*freqs/3e8
+#beta1=2*np.pi*n1*dsaph1*freqs/3e8
+beta2=2*np.pi*n1*sapph_thickness*freq_array/3e8
+#beta3=2*np.pi*n1*dsaph3*freqs/3e8
 
-refl1=(r12+r23*np.exp(2.*1j*beta1))/(1+r12*r23*np.exp(2.*1j*beta1))
-refl2=(r12+r23*np.exp(2.*1j*beta2))/(1+r12*r23*np.exp(2.*1j*beta2))
-refl3=(r12+r23*np.exp(2.*1j*beta3))/(1+r12*r23*np.exp(2.*1j*beta3))
+refl1=(r12+r23_1*np.exp(2.*1j*beta2))/(1+r12*r23_1*np.exp(2.*1j*beta2))
+refl2=(r12+r23_2*np.exp(2.*1j*beta2))/(1+r12*r23_2*np.exp(2.*1j*beta2))
 
 #plot(d*1e9,refl.real)
 #plot(d*1e9,refl.imag)
-
-#plot(d*1e9,abs(refl1+1))
-plot(d*1e9,abs(refl2+1))
+plt.close()
+#plt.plot(dist_array*1e9,abs(refl1+1))
+plt.plot(freq_array*1e-9,abs(refl1+1))
 #plot(d*1e9,abs(refl3+1))
-show()
+plt.show()
