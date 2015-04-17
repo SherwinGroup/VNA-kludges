@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 from os import chdir
 
-chdir("../apr6")
+#chdir("../apr6")
 
 f1=np.loadtxt("freq_538_VNATrc.001")
 f2=np.loadtxt("freq_562_VNATrc.001")
 f3=np.loadtxt("freq_590_VNATrc.001")
 
-chdir("../process")
+#chdir("../process")
 
 fig, ax = plt.subplots()
 plt.minorticks_on()
