@@ -1,15 +1,25 @@
 import numpy as np
 from scipy.optimize import minimize
 
+'''
+Things that need to be done here:
+ - Make naming conventions for r and R consistent.  Complex reflection coefficient?
+   Reflectivity?  Complex reflectivity?  Which one is power vs field?
+ - At the beginning, make a list of variable names to clarify the above point
+'''
+
+
 ########################################
 #general utilities
 ########################################
+
+
 
 def f2c(vector):
     """
     this will turn a numpy array vector of form [real, imag] to [complex]
     """
-    return (vector[:,0]+1j*vector[:,1]).reshape((len(vector[:,0]),1))
+    return (vector[:, 0] + 1j * vector[:, 1]).reshape((len(vector[:, 0]), 1))
 
 def c2f(vector):
     """
@@ -18,15 +28,25 @@ def c2f(vector):
     return np.hstack((vector.real, vector.imag))
 
 #bwwuaaahhh
-def reflm_std(mirror_reference_filename,mirror_refl_filename,sample_reference_filename,sample_refl_filename):
-    samp_normed=f2c(np.loadtxt(sample_refl_filename)[:,3:5])/f2c(np.loadtxt(sample_reference_filename)[:,3:5])
-    mirr_normed=f2c(np.loadtxt(mirror_refl_filename)[:,3:5])/f2c(np.loadtxt(mirror_reference_filename)[:,3:5])
-    reflp=c2f(samp_normed/mirr_normed);
-    reflp[:,0]=-reflp[:,0]
-    return np.hstack((
-        np.loadtxt(sample_refl_filename)[:,0:1], 
-        0*np.loadtxt(sample_refl_filename)[:,0:1],
-        reflp))
+def load_refl_data(mirror_refer_fname, mirror_refl_fname, sample_refer_fname, 
+              sample_refl_fname):
+    """
+    This function will load standard reflection data that has been normalized
+    to a mirror reference.
+    
+    mirror_refer_fname: file name of the mirror reference data    
+    mirror_refl_fname: file name of the mirror reflection data
+    sample_refer_fname: file name of the sample reference data
+    sample_refl_fname: file name of the mirror reflection data
+    
+    returns: I...don't...know...
+    """
+    sample_normed = f2c(np.loadtxt(sample_refl_fname)[:,3:5]) / f2c(np.loadtxt(sample_refer_fname)[:,3:5])
+    mirror_normed = f2c(np.loadtxt(mirror_refl_fname)[:,3:5]) / f2c(np.loadtxt(mirror_refer_fname)[:,3:5])
+    reflp = c2f(sample_normed / mirror_normed);
+    reflp[:,0] = -reflp[:,0]
+    return np.hstack((np.loadtxt(sample_refl_fname)[:,0:1], 
+                      0 * np.loadtxt(sample_refl_fname)[:,0:1], reflp))
 
 ########################################
 ########################################
@@ -36,40 +56,81 @@ def reflm_std(mirror_reference_filename,mirror_refl_filename,sample_reference_fi
 #refractive index calc. functions
 ########################################
 
-def slabr(n,n1,n2,d,freq_range):
-    #calculates frequency-dependent complex reflection coefficient for a "slab" geometry
-    #              ->         |||                     |||
-    #         n1   ->         |||          n          |||          n2
-    #              ->         |||                     |||
-    #d = thickness of middle layer
-    #freq range is desired frequency or array of frequencys
-    r=((n1-n)/(n1+n)+(n-n2)/(n+n2)*np.exp(4*np.pi*1j*n*d/2.9979e8*freq_range))/(1+(n1-n)/(n1+n)*(n-n2)/(n+n2)*np.exp(4*np.pi*1j*n*d/2.9979e8*freq_range))
+def slab_refl_n(n, n1, n2, d, freq_range):
+    """
+    used to be called "slabr"
+    
+    calculates frequency-dependent complex reflection coefficient for a "slab" geometry
+                  ->         |||                     |||
+             n1   ->         |||          n          |||          n2
+                  ->         |||                     |||
+    d = thickness of middle layer
+    freq range is desired frequency or array of frequencies
+    
+    returns: complex reflection coefficient back into material n1
+    """
+    r = ((n1-n)/(n1+n) + (n-n2)/(n+n2) * np.exp(4*np.pi*1j*n*d/2.9979e8*freq_range)) / 
+        (1 + (n1-n)/(n1+n) * (n-n2)/(n+n2) * np.exp(4*np.pi*1j*n*d/2.9979e8*freq_range))
     return r
 
-def slabrr(n,r12,r23,d,freq):
-    r=((r12+r23*np.exp(4*np.pi*1j*d*n*freq/2.9979e8))/(1+r12*r23*np.exp(4*np.pi*1j*d*n*freq/2.9979e8)))
-
+def slab_refl_r(n,r12,r23,d,freq):
+    """
+    used to be called "slabrr"
+    
+    This is the same as slab_refl_n, but using the "simple" complex reflection 
+    coefficients
+    """
+    r = ((r12 + r23*np.exp(4*np.pi*1j*d*n*freq/2.9979e8)) / 
+        (1 + r12*r23*np.exp(4*np.pi*1j*d*n*freq/2.9979e8)))
+    return r
+    
 '''
 calculate refractive index from reflectance
 all units mks
 '''
 
-def refr_errfun(r_data,n,n1,n2,d,freq):
-    out=abs(slabr(n,n1,n2,d,freq)-r_data)**2
-    return out
+def index_errfunc(r_data, n, n1, n2, d, freq):
+    """
+    This takes complex reflection coefficient data and compares it to a calculated
+    complex reflection coefficient from given n, n1 and n2.  I think this is to 
+    provide a least-squares function for fitting to data?
+    
+    r_data: complex reflection coefficient from measurement
+    (n, n1, n2, d, freq): imputs to the slab_refl_n function
+    
+    returns: the absolute square of the difference
+    """
+    diff_square = abs(slab_refl_n(n, n1, n2, d, freq) - r_data)**2
+    return diff_square
 
-def ncalc(r_data,nguess,n1,n2,d,freq_range):
-    guess_array=np.array([nguess.real, nguess.imag])
-    nout=np.array([])
-    ii=0
+def index_calc(r_data, n_guess, n1, n2, d, freq_range):
+    """
+    used to be called "ncalc".  This needs a lot of work, it's just about the
+    least pythonic thing I've seen here, which is saying a lot.  Brayden 
+    disapproves.
+    
+    This function will perform a fit to a set of reflection coefficient data
+    that will approximate the complex index of refraction.  You can't invert 
+    the slab_refl_n function, so you have to fit to it.  
+    
+    r_data: complex reflection coefficient from measurement
+    n_guess: I have no idea what this is
+    (n1, n2, d, freq_range): for slab_refl_n function
+    
+    returns: complex index of refraction
+    """
+    guess_array = np.array([n_guess.real, n_guess.imag])
+    nout = np.array([])
+    ii = 0
     if len(n1) != 1:
         print n1[ii]
         print guess_array
         for freq in freq_range:
-            new_errfun = lambda x: refr_errfun(r_data[ii],x[0]+1j*x[1],n1[ii,0],n2,d,freq_range[ii])
-            outp=minimize(new_errfun,guess_array,method='Nelder-Mead')
-            nout=np.append(nout,[outp.x[0]+1j*outp.x[1]])
-            ii=ii+1
+            new_errfun = lambda x: index_errfunc(r_data[ii], x[0] + 1j*x[1], # Couldn't you just do f2c?
+                                                 n1[ii, 0], n2, d, freq_range[ii])
+            outp = minimize(new_errfun, guess_array, method='Nelder-Mead')
+            nout = np.append(nout,[outp.x[0]+1j*outp.x[1]])
+            ii += 1
     '''
     else:
         for freq in freq_range:
@@ -80,27 +141,56 @@ def ncalc(r_data,nguess,n1,n2,d,freq_range):
     '''
     return nout
 
-def sheet_refl(n1,n2,sigma):
-    #sigma is the surface conductivity
-    #freqs is a vector
-    return (n2+sigma/2.9979e8/8.85e-12-n1)/(n2+sigma/2.9979e8/8.85e-12+n1)
+def sheet_refl(n1, n2, sigma):
+    """
+    This calculates the complex(?) reflection coefficient?
+    
+    n1: index of left material
+    n2: index of right material
+    sigma: surface conductivity at the interface
+    Waves are travelling left-right
+    
+    returns: some sort of reflection coefficient
+    """
+    return (n2 - n1 + sigma/(2.9979e8*8.85e-12)) / (n2 + n1 + sigma/(2.9979e8*8.85e-12))
 
 def sheet_trans(n1,n2,sigma):
-    #transmittance
-    return np.sqrt(n2/n1)*2*n1/(n1+n2+sigma/2.9979e8/8.85e-12)
+    """
+    This function calculates the complex transmittance
+    
+    n1: index of left material
+    n2: index of right material
+    sigma: surface conductivity at the interface
+    Waves are travelling left-right
+    
+    returns: some sort of transmission coefficient
+    """
+    return np.sqrt(n2 / n1) * 2 * n1 / (n1 + n2 + sigma/(2.9979e8*8.85e-12))
 
 #air on both sides
 #slab of index n in between with surface sheets of conductance sigma
+'''
+What the fuck is the above comment for?
+'''
 
-def hr_rv(freq,sigma_dc):
-    return (1- 2*np.sqrt(4*8.85e-12*np.pi*freq/sigma_dc))
+def hr_rv(freq, sigma_dc):
+    """
+    No fucking clue
+    """
+    return 1 - 2 * np.sqrt(4 * 8.85e-12 * np.pi * freq / sigma_dc)
 
-def slabr_sheet(n,sigma,d,freq):
-    r12=sheet_trans(1,1,sigma)
-    return (r12*(1-np.exp(4*np.pi*1j*n*d/2.9979e8*freq))/
-            (1-r12**2*np.exp(4*np.pi*1j*n*d/2.9979e8*freq)))
+def sheet_slab_refl_n(n, sigma, d, freq):
+    """
+    Super confused here, too
+    """
+    r12 = sheet_trans(1, 1, sigma)
+    return r12 * (1 - np.exp(4 * np.pi * 1j * n * d * freq/ 2.9979e8)) / 
+           (1 - r12**2 * np.exp(4 * np.pi * 1j * n * d * freq / 2.9979e8))
 
-def ncalc_back(r_data,n1,n_front,d_front,n2,d,freq_range,nguess):
+def ncalc_back(r_data, n1, n_front, d_front, n2, d, freq_range, nguess):
+    """
+    This looks really confusing
+    """
     r12_front=(n1-n_front)/(n1+n_front)
     guess_array=np.array([nguess.real, nguess.imag])
     nout=np.array([])
