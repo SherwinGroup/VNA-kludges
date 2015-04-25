@@ -195,6 +195,42 @@ def BFieldCalc(ParList, TargetDistance, freq):
 	
 	return np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * EFieldCalc(ParList, TargetDistance, freq)
 	
+	
+'''
+For the auxiliary fields, assume that the media are isotropic.
+'''
+def DFieldCalc(ParList, TargetDistance, freq):
+	TransfMatrix = TransferMatrix(ParList, freq)
+	TransfMatrix_After = TransferMatrix_After(ParList, TargetDistance, freq)
+	EFieldVec = np.dot(TransfMatrix_After, np.array([ [1./TransfMatrix[0, 0]], [0.] ]) )
+	
+	SlabBoundaries = ParList[:,0]
+	SlabFlag = -1
+	TotalDistance = 0
+	for Slab_Index in np.arange(len(SlabBoundaries)):
+		if SlabFlag == -1:
+			TotalDistance = TotalDistance + SlabBoundaries[Slab_Index]
+			if TargetDistance - TotalDistance < 0:
+				SlabFlag = Slab_Index
+	
+	return ParList[SlabFlag, 1] * (EFieldVec[0, 0] + EFieldVec[1, 0])
+	
+	
+def HFieldCalc(ParList, TargetDistance, freq):
+	TransfMatrix = TransferMatrix(ParList, freq)
+	TransfMatrix_After = TransferMatrix_After(ParList, TargetDistance, freq)
+	
+	SlabBoundaries = ParList[:,0]
+	SlabFlag = -1
+	TotalDistance = 0
+	for Slab_Index in np.arange(len(SlabBoundaries)):
+		if SlabFlag == -1:
+			TotalDistance = TotalDistance + SlabBoundaries[Slab_Index]
+			if TargetDistance - TotalDistance < 0:
+				SlabFlag = Slab_Index
+	
+	
+	return np.sqrt(ParList[SlabFlag, 2] / ParList[SlabFlag, 1]) * EFieldCalc( ParList, TargetDistance, freq)
 
 
 
@@ -205,13 +241,27 @@ def BFieldCalc(ParList, TargetDistance, freq):
 FreqList = np.linspace(235e9, 245e9, num=100)
 ReflList = np.zeros(len(FreqList),dtype = np.complex128)
 
-d_critical = 3e8/240e9/4./3.4
+#d_critical = 3e8/240e9/4./3.4
+d_critical = 1e-3
 
+'''
 ParList = np.array([
 	[0., 1., 1.],
 	[1e-3, 1., 1.],
 	[d_critical, 3.4, 1.],
-	[1e-3, 1000.+1000.j, 1.], 
+	[1e-4, 1., 1.], 
+	[1e-4, (1+1j)/np.sqrt(2)*1e5, 1.],
+	[1e-3, 1., 1.],
+	[0., 1., 1.]
+])
+'''
+
+ParList = np.array([
+	[0., 1., 1.],
+	[1e-3, 1., 1.],
+	[1e-3, 11.7, 1.],
+	[.5e-3, 11.7, 14],
+	[1e-3, 1., 1.],
 	[0., 1., 1.]
 ])
 
@@ -239,13 +289,18 @@ plt.show()
 #print TransferMatrix(ParList, 240e9)
 
 Freq = 240e9
-DistList = np.linspace(1e-3+d_critical-.01e-3, 1e-3+d_critical+.01e-3, num=1000)
+#DistList = np.linspace(1e-3+d_critical-.01e-3, 1e-3+d_critical+.01e-3, num=1000)
+DistList = np.linspace(0,3e-3, num=1000)
 EFieldList = np.zeros(len(DistList),dtype = np.complex128)
 BFieldList = np.zeros(len(DistList),dtype = np.complex128)
+DFieldList = np.zeros(len(DistList),dtype = np.complex128)
+HFieldList = np.zeros(len(DistList),dtype = np.complex128)
 
 for dist_i in np.arange(len(DistList)):
 	EFieldList[dist_i] = EFieldCalc(ParList, DistList[dist_i], Freq)
 	BFieldList[dist_i] = BFieldCalc(ParList, DistList[dist_i], Freq)
+	DFieldList[dist_i] = DFieldCalc(ParList, DistList[dist_i], Freq)
+	HFieldList[dist_i] = HFieldCalc(ParList, DistList[dist_i], Freq)
 
 
 '''
@@ -260,15 +315,18 @@ ee = np.dot(TransferMatrix_After(ParList, Freq, 1.5e-3), np.array([[1./TransferM
 print ee[0] + ee[1]
 '''
 
-'''
-plt.plot(DistList, EFieldList.real)
-plt.plot(DistList, EFieldList.imag)
-#plt.plot(DistList, EFieldList.real**2 + EFieldList.imag**2)
-plt.show()
-'''
 
-
-#plt.plot(DistList, BFieldList.real)
-#plt.plot(DistList, BFieldList.imag)
-plt.plot(DistList, BFieldList.real**2 + BFieldList.imag**2)
-plt.show()
+#plt.plot(DistList/1e-3, EFieldList.real)
+#plt.plot(DistList/1e-3, EFieldList.imag)
+#plt.plot(DistList/1e-3, np.sqrt(EFieldList.real**2 + EFieldList.imag**2), label = 'E')
+#plt.plot(DistList/1e-3, BFieldList.real)
+#plt.plot(DistList/1e-3, BFieldList.imag)
+#plt.plot(DistList/1e-3, np.sqrt(BFieldList.real**2 + BFieldList.imag**2), label = 'B')
+#plt.plot(DistList/1e-3, DFieldList.real)
+#plt.plot(DistList/1e-3, DFieldList.imag)
+#plt.plot(DistList/1e-3, np.sqrt(DFieldList.real**2 + DFieldList.imag**2), label = 'D')
+#plt.plot(DistList/1e-3, HFieldList.real)
+#plt.plot(DistList/1e-3, HFieldList.imag)
+plt.plot(DistList/1e-3, np.sqrt(HFieldList.real**2 + HFieldList.imag**2), label = 'H')
+plt.legend()
+plt.savefig("FieldDist.pdf")
