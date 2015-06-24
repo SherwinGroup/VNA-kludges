@@ -41,8 +41,8 @@ def TransferMatrix(ParList, freq):
 		where n is the refractive index inside the slab:
 		n = sqrt(mu * epsilon).
 		'''
-		PropagatorMatrix = np.array([  [np.exp(-1j * 4.*np.pi * ParList[Slab_i, 0.] * n_slab * freq / 2.9979e8), 0.], 
-			[0., np.exp(1j * 4.*np.pi * ParList[Slab_i, 0] * n_slab * freq / 2.9979e8)]  ])
+		PropagatorMatrix = np.array([  [np.exp(-1j * 2.*np.pi * ParList[Slab_i, 0.] * n_slab * freq / 2.9979e8), 0.], 
+			[0., np.exp(1j * 2.*np.pi * ParList[Slab_i, 0] * n_slab * freq / 2.9979e8)]  ])
 		
 		'''
 		InterfaceMatrix uses the boundary conditions to calculate the fields in the next interface from the fields
@@ -83,8 +83,8 @@ def TransferMatrix_Before(ParList, TargetDistance, freq):
 	
 	if TargetDistance < 0:
 		SlabFlag = 0
-		TransfMatrix_Before = np.array([  [np.exp(-1j * 4.*np.pi * TargetDistance * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
-				[0., np.exp(1j * 4.*np.pi * TargetDistance * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ]),
+		TransfMatrix_Before = np.array([  [np.exp(-1j * 2.*np.pi * TargetDistance * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
+				[0., np.exp(1j * 2.*np.pi * TargetDistance * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ]),
 	elif TargetDistance >= 0:
 		'''
 		The following loop determines which slab the target distance falls in.
@@ -102,15 +102,15 @@ def TransferMatrix_Before(ParList, TargetDistance, freq):
 		if SlabFlag == -1:
 			TransfMatrix_Before = np.dot(
 				TransferMatrix(ParList, freq),
-				np.array([  [np.exp(-1j * 4.*np.pi * (TargetDistance - TotalDistance) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
-					[0., np.exp(1j * 4.*np.pi * (TargetDistance - TotalDistance) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ])
+				np.array([  [np.exp(-1j * 2.*np.pi * (TargetDistance - TotalDistance) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
+					[0., np.exp(1j * 2.*np.pi * (TargetDistance - TotalDistance) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ])
 			)
 		else: 
 			ParList_Truncated = np.copy(ParList[0:(SlabFlag + 1),:])
 			TransfMatrix_Before = np.dot(
 				TransferMatrix(ParList_Truncated, freq),
-				np.array([  [np.exp(-1j * 4.*np.pi * (TargetDistance - TotalDistance - SlabBoundaries[Slab_Index]) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
-					[0., np.exp(1j * 4.*np.pi * (TargetDistance - TotalDistance - SlabBoundaries[Slab_Index]) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ])
+				np.array([  [np.exp(-1j * 2.*np.pi * (TargetDistance - TotalDistance - SlabBoundaries[Slab_Index]) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
+					[0., np.exp(1j * 2.*np.pi * (TargetDistance - TotalDistance - SlabBoundaries[Slab_Index]) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ])
 			)	
 	return TransfMatrix_Before
 
@@ -126,8 +126,8 @@ def TransferMatrix_After(ParList, TargetDistance, freq):
 	if TargetDistance < 0:
 		SlabFlag = 0
 		TransfMatrix_After = np.dot(
-			np.array([  [np.exp(1j * 4.*np.pi * TargetDistance * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
-				[0., np.exp(-1j * 4.*np.pi * TargetDistance * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ]),
+			np.array([  [np.exp(1j * 2.*np.pi * TargetDistance * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
+				[0., np.exp(-1j * 2.*np.pi * TargetDistance * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ]),
 			TransferMatrix(ParList, freq)
 		)
 	elif TargetDistance >= 0:
@@ -145,14 +145,14 @@ def TransferMatrix_After(ParList, TargetDistance, freq):
 		if SlabFlag is still -1, then return the whole transfer matrix plus whatever extra distance there might be.
 		'''
 		if SlabFlag == -1:
-			TransfMatrix_After = np.array([  [np.exp(1j * 4.*np.pi * (TargetDistance - TotalDistance ) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
-				[0., np.exp(-1j * 4.*np.pi * (TargetDistance - TotalDistance) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ])
+			TransfMatrix_After = np.array([  [np.exp(1j * 2.*np.pi * (TargetDistance - TotalDistance ) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
+				[0., np.exp(-1j * 2.*np.pi * (TargetDistance - TotalDistance) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ])
 		else: 
 			ParList_Truncated = np.copy(ParList[SlabFlag:len(SlabBoundaries),:])
 			ParList_Truncated[0,0] = 0.
 			TransfMatrix_After = np.dot(
-				np.array([  [np.exp(1j * 4.*np.pi * (TargetDistance - TotalDistance) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
-					[0., np.exp(-1j * 4.*np.pi * (TargetDistance - TotalDistance) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ]),
+				np.array([  [np.exp(1j * 2.*np.pi * (TargetDistance - TotalDistance) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8), 0.], 
+					[0., np.exp(-1j * 2.*np.pi * (TargetDistance - TotalDistance) * np.sqrt(ParList[SlabFlag, 1] * ParList[SlabFlag, 2]) * freq / 2.9979e8)]  ]),
 				TransferMatrix(ParList_Truncated, freq)
 			)
 	
@@ -242,7 +242,7 @@ FreqList = np.linspace(235e9, 245e9, num=100)
 ReflList = np.zeros(len(FreqList),dtype = np.complex128)
 
 #d_critical = 3e8/240e9/4./3.4
-d_critical = 1e-3
+#d_critical = 1e-3
 
 '''
 ParList = np.array([
@@ -256,15 +256,36 @@ ParList = np.array([
 ])
 '''
 
-ParList = np.array([
-	[0., 1., 1.],
-	[1e-3, 1., 1.],
-	[1e-3, 4., 1.],
-	[.5e-3, 4., 16.],
-	[1e-3, 1., 1.],
-	[0., 1., 1.]
-])
+# ParList = np.array([
+# 	[0., 1., 1.],
+# 	[1e-3, 1., 1.],
+# 	[1e-3, 4., 1.],
+# 	[.5e-3, 4., 16.],
+# 	[1e-3, 1., 1.],
+# 	[0., 1., 1.]
+# ])
 
+Freq = 300e9 # 1 mm
+lamb = 2.9979e8/Freq
+
+
+n_3 = 4. + 4.*1j
+n_2 = np.sqrt( n_3.real + (n_3.imag)**2 / (n_3.real - 1)) + 0.*1j
+
+r_23 = (n_3 - n_2) / (n_2 + n_3)
+
+NumQtrWavelengths = 9.
+
+h_2 = lamb/4./n_2 * (NumQtrWavelengths - 1/np.pi * np.arctan( r_23.imag / r_23.real))
+
+
+ParList = np.array([
+        [0., 1., 1.],
+        [4e-3, 1., 1.],
+        [h_2, n_2**2, 1.],
+        [4e-3, n_3**2, 1.],
+        [0., 1., 1.]
+])
 '''
 #Freq = 240e9
 #print TransferMatrix(ParList, Freq)
@@ -288,9 +309,9 @@ plt.show()
 #print np.dot(TransferMatrix_Before(ParList, .5e-3, 240e9), TransferMatrix_After(ParList, .5e-3, 240e9))
 #print TransferMatrix(ParList, 240e9)
 
-Freq = 240e9
+#Freq = 240e9
 #DistList = np.linspace(1e-3+d_critical-.01e-3, 1e-3+d_critical+.01e-3, num=1000)
-DistList = np.linspace(0,3e-3, num=1000)
+DistList = np.linspace(0,10e-3, num=1000)
 EFieldList = np.zeros(len(DistList),dtype = np.complex128)
 BFieldList = np.zeros(len(DistList),dtype = np.complex128)
 DFieldList = np.zeros(len(DistList),dtype = np.complex128)
@@ -318,7 +339,7 @@ print ee[0] + ee[1]
 
 #plt.plot(DistList/1e-3, EFieldList.real)
 #plt.plot(DistList/1e-3, EFieldList.imag)
-#plt.plot(DistList/1e-3, np.sqrt(EFieldList.real**2 + EFieldList.imag**2), label = 'E')
+plt.plot(DistList/1e-3, np.sqrt(EFieldList.real**2 + EFieldList.imag**2), label = 'E')
 #plt.plot(DistList/1e-3, BFieldList.real)
 #plt.plot(DistList/1e-3, BFieldList.imag)
 #plt.plot(DistList/1e-3, np.sqrt(BFieldList.real**2 + BFieldList.imag**2), label = 'B')
@@ -327,6 +348,7 @@ print ee[0] + ee[1]
 #plt.plot(DistList/1e-3, np.sqrt(DFieldList.real**2 + DFieldList.imag**2), label = 'D')
 #plt.plot(DistList/1e-3, HFieldList.real)
 #plt.plot(DistList/1e-3, HFieldList.imag)
-plt.plot(DistList/1e-3, np.sqrt(HFieldList.real**2 + HFieldList.imag**2), label = 'H')
+#plt.plot(DistList/1e-3, np.sqrt(HFieldList.real**2 + HFieldList.imag**2), label = 'H')
 plt.legend()
 plt.savefig("FieldDist.pdf")
+#plt.show()

@@ -100,7 +100,8 @@ samps['si_pink'].add_trc(bnd, reflm_std("mirror_VNATrc.001", "mirror_VNATrc.002"
 '''
 chdir("../process")
 
-plt.close('all')
+fig, ax = plt.subplots()
+plt.minorticks_on()
 #plt.plot(samps['si_yellow'].trc_bd_fstack()[:,0],samps['si_yellow'].bd_reflectivity()[:,2])
 #plt.plot(samps['si_pink'].trc_bd_fstack()[:,0],samps['si_pink'].bd_reflectivity()[:,2])
 for key in samps.keys():
@@ -114,7 +115,10 @@ for key in samps.keys():
 #plt.plot(samps['blankwr1p5'].trc_bd_fstack()[:,0]/1e9,a)
 #plt.plot(samps['gaaswr1p5'].trc_bd_fstack()[:,0]/1e9,b)
 plt.ylim(0,2)
-plt.show()
+ax.xaxis.set_minor_locator(AutoMinorLocator(2))
+ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+plt.savefig("EField_All.pdf", format="pdf")
+plt.clf()
 
 '''
 fig, ax = plt.subplots()
