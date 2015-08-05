@@ -81,8 +81,8 @@ def slab_refl_n(n, n1, n2, d, freq_range):
     
     returns: complex reflection coefficient back into material n1
     """
-    r = ((n1-n)/(n1+n) + (n-n2)/(n+n2) * np.exp(4*np.pi*1j*n*d/2.9979e8*freq_range)) / 
-        (1 + (n1-n)/(n1+n) * (n-n2)/(n+n2) * np.exp(4*np.pi*1j*n*d/2.9979e8*freq_range))
+    r = (((n1-n)/(n1+n) + (n-n2)/(n+n2) * np.exp(4*np.pi*1j*n*d/2.9979e8*freq_range)) / 
+        (1 + (n1-n)/(n1+n) * (n-n2)/(n+n2) * np.exp(4*np.pi*1j*n*d/2.9979e8*freq_range)))
     return r
 
 def slab_refl_r(n,r12,r23,d,freq):
@@ -241,8 +241,8 @@ def sheet_slab_refl_n(n, sigma, d, freq):
     This can probably be safely deleted
     """
     r12 = sheet_trans(1, 1, sigma)
-    return r12 * (1 - np.exp(4 * np.pi * 1j * n * d * freq/ 2.9979e8)) / 
-           (1 - r12**2 * np.exp(4 * np.pi * 1j * n * d * freq / 2.9979e8))
+    return (r12 * (1 - np.exp(4 * np.pi * 1j * n * d * freq/ 2.9979e8)) / 
+           (1 - r12**2 * np.exp(4 * np.pi * 1j * n * d * freq / 2.9979e8)))
 
 def ncalc_back(r_data, n1, n_front, d_front, n2, d, freq_range, nguess):
     """
@@ -397,7 +397,7 @@ class trc(object): #means trace
         
         (not clear why this is separate from bdrefl below)
         '''
-            return self.freq(band)[self.bd_ind(band)[0]:self.bd_ind(band)[1]]
+        return self.freq(band)[self.bd_ind(band)[0]:self.bd_ind(band)[1]]
 
     def bdrefl(self,band):
         '''
